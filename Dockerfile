@@ -12,6 +12,11 @@ FROM openjdk:8
 
 COPY --from=build /workdir/halyard-web/build/install/halyard /opt/halyard
 
+RUN apt-get update && \
+    apt-get install -y vim && \
+    apt-get install -y sudo && \
+    apt-get clean
+
 RUN echo '#!/usr/bin/env bash' | tee /usr/local/bin/hal > /dev/null && \
     echo '/opt/halyard/bin/hal "$@"' | tee /usr/local/bin/hal > /dev/null
 
@@ -35,7 +40,8 @@ RUN wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
     python /tmp/get-pip.py && \
     pip install awscli --upgrade
 
-RUN useradd -m spinnaker
+RUN useradd -m spinnaker && usermod -aG sudo spinnaker
+RUN echo "spinnaker     ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER spinnaker
 
